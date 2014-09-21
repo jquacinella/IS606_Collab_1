@@ -4,14 +4,14 @@ stock.turkeySam <- 0;
 stock.veggieSam <- 0;
 
 # costs to make our sammies
-cost.hamSam <- 2;
-cost.turkeySam <- 2;
-cost.veggieSam <- 2;
+cost.hamSam <- 3.50;
+cost.turkeySam <- 4.00;
+cost.veggieSam <- 2.50;
 
 # prices we sell our sammies for
-price.hamSam <- 7;
-price.turkeySam <- 7;
-price.veggieSam <- 7;
+price.hamSam <- 6.50;
+price.turkeySam <- 6.50;
+price.veggieSam <- 5;
 
 # number of days  in simulation
 days <- 30;
@@ -30,9 +30,9 @@ for(simulation in 1:numSimulations) {
   # Do simulation of N days
   for (n in 1:days) {
     # Init this day with a new stock of food (Assume all goes to waste)
-    stock.hamSam <- 20;
+    stock.hamSam <- 18;
     stock.turkeySam <- 20;
-    stock.veggieSam <- 20;
+    stock.veggieSam <- 10;
     # Use this if seller can store some sammies
     #stock.hamSam <- stock.hamSam + delta.hamSam;
     #stock.turkeySam <- stock.turkeySam + delta.turkeySam;
@@ -110,4 +110,8 @@ for(simulation in 1:numSimulations) {
 }
 
 # After all simulations done, show profit graph
-ggplot(data.frame(profit=total.profits)) + geom_histogram(aes(x=profit))
+ggplot(data.frame(profit=total.profits)) + 
+  geom_histogram(aes(x=profit)) + 
+  xlab('Profit') + 
+  ylab('Frequency') + 
+  ggtitle(paste('Mean Profit =', total.profits))
