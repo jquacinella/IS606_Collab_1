@@ -13,12 +13,20 @@ price.hamSam <- 6.50;
 price.turkeySam <- 6.50;
 price.veggieSam <- 5;
 
+# calculate poisson lambdas from data
+salesData <- read.csv("sales.csv")
+lambda.ham <- mean(salesData$demand.ham)
+lambda.turkey <- mean(salesData$demand.turkey)
+lambda.veggie <- mean(salesData$demand.veggie)
+
 # number of days  in simulation
 days <- 30;
 numSimulations <- 10000;
 
+# profit results for overall simulation
 total.profits <- numeric(numSimulations); 
 
+# Lets do a bunch of simulations, with each simulation based on 'days'
 for(simulation in 1:numSimulations) {
   # data per iter
   costs <- numeric(N);
@@ -30,18 +38,18 @@ for(simulation in 1:numSimulations) {
   # Do simulation of N days
   for (n in 1:days) {
     # Init this day with a new stock of food (Assume all goes to waste)
-    stock.hamSam <- 18;
-    stock.turkeySam <- 20;
-    stock.veggieSam <- 10;
+    stock.hamSam <- 14; # 18;
+    stock.turkeySam <- 14; # 20;
+    stock.veggieSam <- 8; # 10;
     # Use this if seller can store some sammies
     #stock.hamSam <- stock.hamSam + delta.hamSam;
     #stock.turkeySam <- stock.turkeySam + delta.turkeySam;
     #stock.veggieSam <- stock.veggieSam + delta.veggieSam;
     
     # Get this from sub-models
-    cust.hamSam <- ceiling(runif(1, 1,35));
-    cust.turkeySam <- ceiling(runif(1, 1,35));
-    cust.veggieSam <- ceiling(runif(1, 1,35));
+    cust.hamSam <- ceiling(rpois(1, lambda.ham));
+    cust.turkeySam <- ceiling(rpois(1, lambda.turkey));
+    cust.veggieSam <- ceiling(rpois(1, lambda.veggie));
     
     # Update cost data
     costs[n] <- cost.hamSam * stock.hamSam + cost.turkeySam * stock.turkeySam + cost.veggieSam * stock.veggieSam;
@@ -63,7 +71,6 @@ for(simulation in 1:numSimulations) {
       order.turkeySam <- cust.turkeySam;
       unfullfilled.turkeySam <- 0;
       stock.turkeySam <- stock.turkeySam - order.turkeySam;
-      
     }
     else { 
       order.turkeySam <- stock.turkeySam;
@@ -102,11 +109,11 @@ for(simulation in 1:numSimulations) {
   }
 
   # Generate data frame with all relevant data from single simulation 
-  salesData <- data.frame(costs=costs, revenues=revenues, profit=revenues-costs, 
+  simSalesData <- data.frame(costs=costs, revenues=revenues, profit=revenues-costs, 
                           orders.ham=orders.hamSam, orders.turkey=order.turkeySam, orders.veggie=orders.veggieSam)
 
   # update aggregates over simulations
-  total.profits[simulation] = sum(salesData$profit);
+  total.profits[simulation] = sum(simSalesData$profit);
 }
 
 # After all simulations done, show profit graph
