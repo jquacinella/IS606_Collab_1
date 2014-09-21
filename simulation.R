@@ -1,0 +1,113 @@
+# lets initialize our stock to nothing (will be setup at beginning of each iter)
+stock.hamSam <- 0;
+stock.turkeySam <- 0;
+stock.veggieSam <- 0;
+
+# costs to make our sammies
+cost.hamSam <- 2;
+cost.turkeySam <- 2;
+cost.veggieSam <- 2;
+
+# prices we sell our sammies for
+price.hamSam <- 7;
+price.turkeySam <- 7;
+price.veggieSam <- 7;
+
+# number of days  in simulation
+days <- 30;
+numSimulations <- 10000;
+
+total.profits <- numeric(numSimulations); 
+
+for(simulation in 1:numSimulations) {
+  # data per iter
+  costs <- numeric(N);
+  revenues <- numeric(N);
+  orders.hamSam <- numeric(N);
+  orders.turkeySam <- numeric(N);
+  orders.veggieSam <- numeric(N);
+
+  # Do simulation of N days
+  for (n in 1:days) {
+    # Init this day with a new stock of food (Assume all goes to waste)
+    stock.hamSam <- 20;
+    stock.turkeySam <- 20;
+    stock.veggieSam <- 20;
+    # Use this if seller can store some sammies
+    #stock.hamSam <- stock.hamSam + delta.hamSam;
+    #stock.turkeySam <- stock.turkeySam + delta.turkeySam;
+    #stock.veggieSam <- stock.veggieSam + delta.veggieSam;
+    
+    # Get this from sub-models
+    cust.hamSam <- ceiling(runif(1, 1,35));
+    cust.turkeySam <- ceiling(runif(1, 1,35));
+    cust.veggieSam <- ceiling(runif(1, 1,35));
+    
+    # Update cost data
+    costs[n] <- cost.hamSam * stock.hamSam + cost.turkeySam * stock.turkeySam + cost.veggieSam * stock.veggieSam;
+    
+    # ham sammies
+    if (stock.hamSam >= cust.hamSam) { 
+      order.hamSam <- cust.hamSam;
+      unfullfilled.hamSam <- 0;
+      stock.hamSam <- stock.hamSam - order.hamSam;
+    }
+    else { 
+      order.hamSam <- stock.hamSam;
+      unfullfilled.hamSam <- cust.hamSam - stock.hamSam;
+      stock.hamSam <- 0;
+    }
+    
+    # turkey sammies
+    if (stock.turkeySam >= cust.turkeySam) { 
+      order.turkeySam <- cust.turkeySam;
+      unfullfilled.turkeySam <- 0;
+      stock.turkeySam <- stock.turkeySam - order.turkeySam;
+      
+    }
+    else { 
+      order.turkeySam <- stock.turkeySam;
+      unfullfilled.turkeySam <- cust.turkeySam - stock.turkeySam;
+      stock.turkeySam <- 0;
+    }
+    
+    # veggie sammies
+    if (stock.veggieSam >= cust.veggieSam) { 
+      order.veggieSam <- cust.veggieSam;
+      unfullfilled.veggieSam <- 0; 
+      stock.veggieSam <- stock.veggieSam - order.veggieSam;
+    }
+    else { 
+      order.veggieSam <- stock.veggieSam;
+      unfullfilled.veggieSam <- cust.veggieSam - stock.veggieSam;
+      stock.veggieSam <- 0;
+    }
+    
+    # Update orders
+    orders.hamSam[n] <- order.hamSam;
+    orders.turkeySam[n] <- order.turkeySam;
+    orders.veggieSam[n] <- order.veggieSam;
+    
+    # Update revenue data
+    revenues[n] <- price.hamSam * order.hamSam + price.turkeySam * order.turkeySam + price.veggieSam * order.veggieSam;
+    
+    # Print values after this day
+    # print(paste("after iter n=", n, "..."));
+    # print(paste("Stock of ham, turkey and veggie sammies:", stock.hamSam, stock.turkeySam, stock.veggieSam));
+    # print(paste("Orders of ham, turkey and veggie sammies:", order.hamSam, order.turkeySam, order.veggieSam));
+    # print(paste("Unfullfied of ham, turkey and veggie sammies:", unfullfilled.hamSam, unfullfilled.turkeySam, unfullfilled.veggieSam));
+    # print(paste("Total cost for iter:", costs[n]));
+    # print(paste("Total revenue for iter", revenues[n]));
+    # print(paste("Total profit for iter", revenues[n] - costs[n]));
+  }
+
+  # Generate data frame with all relevant data from single simulation 
+  salesData <- data.frame(costs=costs, revenues=revenues, profit=revenues-costs, 
+                          orders.ham=orders.hamSam, orders.turkey=order.turkeySam, orders.veggie=orders.veggieSam)
+
+  # update aggregates over simulations
+  total.profits[simulation] = sum(salesData$profit);
+}
+
+# After all simulations done, show profit graph
+ggplot(data.frame(profit=total.profits)) + geom_histogram(aes(x=profit))
