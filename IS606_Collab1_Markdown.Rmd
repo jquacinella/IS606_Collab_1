@@ -1,0 +1,21 @@
+---
+title: "IS606_Collaborate_Markdown"
+output:
+  pdf_document:
+    highlight: tango
+  html_document:
+    highlight: tango
+    keep_md: yes
+    theme: cerulean
+---
+
+
+##Initial Thoughts
+An initial question to be answered is whether the answer to this question should a probabilistic one or a simulation.  
+
+
+##Assumptions
+Our assumptions include:
+
+* Customers and the orders they make are independent of each other
+
