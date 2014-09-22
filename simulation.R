@@ -30,11 +30,11 @@ runSimulation <- function(stock.begin.hamSam, stock.begin.turkeySam, stock.begin
   # Lets do a bunch of simulations, with each simulation based on 'days'
   for(simulation in 1:numSimulations) {
     # data per iter
-    costs <- numeric(N);
-    revenues <- numeric(N);
-    orders.hamSam <- numeric(N);
-    orders.turkeySam <- numeric(N);
-    orders.veggieSam <- numeric(N);
+    costs <- 0
+    revenues <- 0
+    orders.hamSam <- 0
+    orders.turkeySam <- 0
+    orders.veggieSam <- 0
 
     # Do simulation of N days
     for (n in 1:days) {

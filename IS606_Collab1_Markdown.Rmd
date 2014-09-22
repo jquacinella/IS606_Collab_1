@@ -1,0 +1,24 @@
+---
+title: "IS606_Collaborate_Markdown"
+output:
+  pdf_document:
+    highlight: tango
+    keep_tex: yes
+  html_document:
+    highlight: tango
+    keep_md: yes
+    theme: cerulean
+---
+
+
+##Initial Thoughts
+An initial question to be answered is whether the answer to this question should be a probabilistic one or a simulation.  While a statistician might initially choose the first, the second is better to actually see results.
+
+
+##Assumptions
+Our assumptions include:
+
+* Customers and the orders they make are independent of each other
+    + While this may not be true in the real world, as someone's order may influence the order of the next person, it is easier to pretend that they are not
+
+
