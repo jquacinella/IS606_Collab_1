@@ -3,6 +3,7 @@ title: "IS606_Collaborate_Markdown"
 output:
   pdf_document:
     highlight: tango
+    keep_tex: yes
   html_document:
     highlight: tango
     keep_md: yes
