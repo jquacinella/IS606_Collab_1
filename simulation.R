@@ -147,23 +147,28 @@ runSimulation <- function(stock.begin.hamSam, stock.begin.turkeySam, stock.begin
     total.profits[simulation] = sum(simSalesData$profit); 
   }
 
+  # Return vector of the total profits from the N simulations
   return(total.profits);
 
 }
 
+# Run three simulations
 total.profits.sim1 <- runSimulation(14,14,8);
 total.profits.sim2 <- runSimulation(18,20,10);
 total.profits.sim3 <- runSimulation(18,20,10, TRUE);
 
-# After all simulations done, show profit graph
+# After all simulations done, show profit graphs
 p<-ggplot() + 
-  geom_histogram(data=data.frame(profit=total.profits.sim1), aes(x=profit), fill="#ff0000", alpha=0.4) + 
-  geom_histogram(data=data.frame(profit=total.profits.sim2), aes(x=profit), fill="#00ff00", alpha=0.4) + 
-  geom_histogram(data=data.frame(profit=total.profits.sim3), aes(x=profit), fill="#0000ff", alpha=0.4) + 
+  geom_histogram(data=data.frame(profit=total.profits.sim1), aes(x=profit, fill="1"), alpha=0.4) + 
+  geom_histogram(data=data.frame(profit=total.profits.sim2), aes(x=profit, fill="2"), alpha=0.4) + 
+  geom_histogram(data=data.frame(profit=total.profits.sim3), aes(x=profit, fill="3"), alpha=0.4) + 
   xlab('Profit') + 
   ylab('Frequency') + 
   xlim(2500, 3700) +
-  ggtitle("Profit");
+  ggtitle("Profit") + 
+  scale_fill_manual("", values=c("red", "green", "blue"), 
+                        breaks=c("1", "2", "3"), 
+                        labels=c("Constant Supply 14,14,8", "Constant Supply 18,20,10", "Constant Supply with Storage"));
 p
 
 # Save profit graph to disk
