@@ -14,11 +14,64 @@ output:
 ##Initial Thoughts
 An initial question to be answered is whether the answer to this question should be a probabilistic one or a simulation.  While a statistician might initially choose the first, the second is better to actually see results.
 
+James Response: I think the simulation is just a way of running a probabilistic model. In the code, we are using a Poisson distribution to approximate customer demand. In the last two graphs in the updated code, we have supply trying to match the demand, so we have another poisson distribution. So the simulation just works out the distribution of profit analytically versus mathematically. I think either way is fine but we can be formal about the model if we need to:
 
-##Assumptions
+Proft = Revenue - Cost
+Revenue = price.ham * min(stock.ham, cust.ham) + price.turkey * min(stock.ham, cust.turkey) + price.veggie * min(stock.ham, cust.veggie)
+
+with
+
+cust.ham ~ Poisson(lambda.ham)
+cust.turkey ~ Poisson(lambda.turkey)
+cust.veggie ~ Poisson(lambda.veggie)
+
+and
+
+Cost = stock.ham * cost.ham + stock.turkey * cost.turkey + stock.veggie * cost.veggie
+
+in the constant supply model with the cost variables constant, and the stock variables constant (unless we have storage in the model, etc...). I guess at this point we would have to write the math out to find an explicit formula the Profit distribution? 
+
+
+I feel like this is a IS609-way of looking at things :)
+
+
+## Assumptions
+
 Our assumptions include:
 
 * Customers and the orders they make are independent of each other
     + While this may not be true in the real world, as someone's order may influence the order of the next person, it is easier to pretend that they are not
+* In the no storage models, we assume that everything goes to waste. In the storage models, we assume that we can keep leftovers indefintely.
+* Customer demand in the future will be close to customer demand we have seen in the past
+* TODO: any others?
+
+## Investigating Customer Demand
 
 
+## Proft Graphs 
+
+
+## Suggestions?
+
+# TODO: elaborate
+After analyzing the situation, these suggestions come to mind:
+
+  * Increasing your supply to match customer demand increases profit
+  * Buying a refrigerator can help lower long-term costs by not wasting food 
+
+
+## Model
+
+Lets test these recoomendations by creating a model and simulating events to find and compare the various profit distributions for the different suggestions. 
+
+# TODO: describe model
+
+
+## Simulation to Test Suggestions
+
+
+
+## Conclusions
+
+
+Using this model, it seems that both suggestions would increase James' overall profit
