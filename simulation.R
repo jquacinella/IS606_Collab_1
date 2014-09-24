@@ -157,7 +157,8 @@ total.profits.sim1 <- runSimulation(14,14,8);
 total.profits.sim2 <- runSimulation(18,20,10);
 total.profits.sim3 <- runSimulation(18,20,10, TRUE);
 
-
+#following uses max values (of demand in sales.csv) for each demand
+total.profits.sim4 <- runSimulation(25,37,24, TRUE)
 
 
 # After all simulations done, show profit graphs
@@ -165,13 +166,14 @@ p<-ggplot() +
   geom_histogram(data=data.frame(profit=total.profits.sim1), aes(x=profit, fill="1"), alpha=0.4) + 
   geom_histogram(data=data.frame(profit=total.profits.sim2), aes(x=profit, fill="2"), alpha=0.4) + 
   geom_histogram(data=data.frame(profit=total.profits.sim3), aes(x=profit, fill="3"), alpha=0.4) + 
+  geom_histogram(data=data.frame(profit=total.profits.sim4), aes(x=profit, fill="4"), alpha=0.4) +
   xlab('Profit') + 
   ylab('Frequency') + 
-  xlim(2500, 3700) +
+  xlim(2500, 4550) +
   ggtitle("Profit") + 
-  scale_fill_manual("", values=c("red", "green", "blue"), 
-                        breaks=c("1", "2", "3"), 
-                        labels=c("Constant Supply 14,14,8", "Constant Supply 18,20,10", "Constant Supply with Storage"));
+  scale_fill_manual("", values=c("red", "green", "blue", "orange"), 
+                        breaks=c("1", "2", "3", "4"), 
+                        labels=c("Constant Supply 14,14,8", "Constant Supply 18,20,10", "Constant Supply with Storage", "Max demand supply with storage"));
 p
 
 # Save profit graph to disk
