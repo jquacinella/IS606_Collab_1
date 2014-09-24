@@ -11,7 +11,7 @@ price.turkeySam <- 6.50;
 price.veggieSam <- 5;
 
 # number of days  in simulation
-days <- 30;
+days <- 130;
 numSimulations <- 10000;
 
 # calculate poisson lambdas from data
@@ -137,6 +137,7 @@ total.profits.sim2 <- runSimulation(18,20,10);
 total.profits.sim3 <- runSimulation(18,20,10, TRUE);
 total.profits.sim4 <- runSimulation(lambda.ham, lambda.turkey, lambda.veggie);
 total.profits.sim5 <- runSimulation(lambda.ham, lambda.turkey, lambda.veggie, TRUE);
+total.profits.sim6 <- runSimulation(25,37,24, TRUE);
 
 # After all simulations done, show profit graphs
 p<-ggplot() + 
@@ -145,17 +146,18 @@ p<-ggplot() +
   geom_histogram(data=data.frame(profit=total.profits.sim3), aes(x=profit, fill="3"), alpha=0.4) + 
   geom_histogram(data=data.frame(profit=total.profits.sim4), aes(x=profit, fill="4"), alpha=0.4) + 
   geom_histogram(data=data.frame(profit=total.profits.sim5), aes(x=profit, fill="5"), alpha=0.4) + 
+  geom_histogram(data=data.frame(profit=total.profits.sim6), aes(x=profit, fill="6"), alpha=0.4) + 
   xlab('Profit ($)') + 
   ylab('Frequency') + 
-  xlim(2500, 3900) +
   ggtitle("Profit Distribution Based on Various Models") + 
-  scale_fill_manual("", values=c("red", "green", "blue", "purple", "orange"), 
-                        breaks=c("1", "2", "3", "4", "5"), 
+  scale_fill_manual("", values=c("red", "green", "blue", "purple", "pink", "orange"), 
+                        breaks=c("1", "2", "3", "4", "5", "6"), 
                         labels=c("Constant Supply 14,14,8, No Storage", 
                           "Constant Supply 18,20,10, No Storage", 
                           "Constant Supply 18,20,10 with Storage", 
                           "Variable Supply, No Storage",
-                          "Variable Supply, Storage"));
+                          "Variable Supply, Storage",
+                          "Max Demand Supply w/ Storage"));
 p
 
 # Save profit graph to disk
