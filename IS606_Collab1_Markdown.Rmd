@@ -43,6 +43,7 @@ Our assumptions include:
     + While this may not be true in the real world, as someone's order may influence the order of the next person, it is easier to pretend that they are not
 * In the no storage models, we assume that everything goes to waste. In the storage models, we assume that we can keep leftovers indefintely.
 * Customer demand in the future will be close to customer demand we have seen in the past
+* Increasing the supply doesn't increase cost outside of buying more goods (i.e. no need to increase labor)
 * TODO: any others?
 
 ## Investigating Customer Demand
