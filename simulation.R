@@ -157,6 +157,9 @@ total.profits.sim1 <- runSimulation(14,14,8);
 total.profits.sim2 <- runSimulation(18,20,10);
 total.profits.sim3 <- runSimulation(18,20,10, TRUE);
 
+
+
+
 # After all simulations done, show profit graphs
 p<-ggplot() + 
   geom_histogram(data=data.frame(profit=total.profits.sim1), aes(x=profit, fill="1"), alpha=0.4) + 
