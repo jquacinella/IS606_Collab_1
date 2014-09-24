@@ -1,18 +1,4 @@
----
-title: "IS606_Collaborate_Markdown_1"
-output:
-  html_document:
-    highlight: tango
-    keep_md: yes
-    number_sections: yes
-    theme: cerulean
-    toc: yes
-  pdf_document:
-    highlight: tango
-    keep_tex: yes
-  word_document:
-    highlight: tango
----
+# IS606_Collaborate_Markdown_1
 
 
 ##Initial Thoughts
@@ -27,7 +13,8 @@ Our assumptions include:
 
 
 ##First Look
-```{r}
+
+```r
 library(ggplot2)
 library(reshape2)
 details <- read.csv("details.csv", header=T)
@@ -53,17 +40,26 @@ ggtitle("Veggie")
 ```
 
 <!-- Some comments about each of the graphs? -->
-```{r}
+
+```r
 plotHam
 ```
 
-```{r}
+![plot of chunk unnamed-chunk-2](./IS606_Collab1_Markdown_files/figure-html/unnamed-chunk-2.png) 
+
+
+```r
 plotTurkey
 ```
 
-```{r}
+![plot of chunk unnamed-chunk-3](./IS606_Collab1_Markdown_files/figure-html/unnamed-chunk-3.png) 
+
+
+```r
 plotVeggie
 ```
+
+![plot of chunk unnamed-chunk-4](./IS606_Collab1_Markdown_files/figure-html/unnamed-chunk-4.png) 
 
 
 ##Analysis of Historical Data
