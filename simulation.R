@@ -1,3 +1,5 @@
+library(ggplot2)
+
 # costs to make our sammies
 cost.hamSam <- 3.50;
 cost.turkeySam <- 4.00;
@@ -18,6 +20,7 @@ lambda.ham <- mean(salesData$demand.ham)
 lambda.turkey <- mean(salesData$demand.turkey)
 lambda.veggie <- mean(salesData$demand.veggie)
 
+
 runSimulation <- function(stock.begin.hamSam, stock.begin.turkeySam, stock.begin.veggieSam, withStorage=FALSE) {
   # lets initialize our stock to nothing (will be setup at beginning of each iter)
   stock.hamSam <- 0;
@@ -29,12 +32,13 @@ runSimulation <- function(stock.begin.hamSam, stock.begin.turkeySam, stock.begin
 
   # Lets do a bunch of simulations, with each simulation based on 'days'
   for(simulation in 1:numSimulations) {
-    # data per iter
-    costs <- 0
-    revenues <- 0
-    orders.hamSam <- 0
-    orders.turkeySam <- 0
-    orders.veggieSam <- 0
+    # Initialize data per simulation 
+    # (we pre-initialize memory to avoid having to allocate it constantly in the loops, helps with speed)
+    costs <- numeric(days);
+    revenues <- numeric(days);
+    orders.hamSam <- numeric(days);
+    orders.turkeySam <- numeric(days);
+    orders.veggieSam <- numeric(days);
 
     # Do simulation of N days
     for (n in 1:days) {
@@ -78,97 +82,80 @@ runSimulation <- function(stock.begin.hamSam, stock.begin.turkeySam, stock.begin
       }
       
    
+      # TODO: vectorize at some point
       
       # Get this from sub-models
       cust.hamSam <- ceiling(rpois(1, lambda.ham));
       cust.turkeySam <- ceiling(rpois(1, lambda.turkey));
       cust.veggieSam <- ceiling(rpois(1, lambda.veggie));
-      
-      
+
       # ham sammies
       if (stock.hamSam >= cust.hamSam) { 
         order.hamSam <- cust.hamSam;
-        unfullfilled.hamSam <- 0;
         stock.hamSam <- stock.hamSam - order.hamSam;
       }
       else { 
         order.hamSam <- stock.hamSam;
-        unfullfilled.hamSam <- cust.hamSam - stock.hamSam;
         stock.hamSam <- 0;
       }
       
       # turkey sammies
       if (stock.turkeySam >= cust.turkeySam) { 
         order.turkeySam <- cust.turkeySam;
-        unfullfilled.turkeySam <- 0;
         stock.turkeySam <- stock.turkeySam - order.turkeySam;
       }
       else { 
         order.turkeySam <- stock.turkeySam;
-        unfullfilled.turkeySam <- cust.turkeySam - stock.turkeySam;
         stock.turkeySam <- 0;
       }
       
       # veggie sammies
       if (stock.veggieSam >= cust.veggieSam) { 
         order.veggieSam <- cust.veggieSam;
-        unfullfilled.veggieSam <- 0; 
         stock.veggieSam <- stock.veggieSam - order.veggieSam;
       }
       else { 
         order.veggieSam <- stock.veggieSam;
-        unfullfilled.veggieSam <- cust.veggieSam - stock.veggieSam;
         stock.veggieSam <- 0;
       }
       
-      # Update orders
-      orders.hamSam[n] <- order.hamSam;
-      orders.turkeySam[n] <- order.turkeySam;
-      orders.veggieSam[n] <- order.veggieSam;
-      
       # Update revenue data
       revenues[n] <- price.hamSam * order.hamSam + price.turkeySam * order.turkeySam + price.veggieSam * order.veggieSam;
-      
-      # Print values after this day
-      # print(paste("after iter n=", n, "..."));
-      # print(paste("Stock of ham, turkey and veggie sammies:", stock.hamSam, stock.turkeySam, stock.veggieSam));
-      # print(paste("Orders of ham, turkey and veggie sammies:", order.hamSam, order.turkeySam, order.veggieSam));
-      # print(paste("Unfullfied of ham, turkey and veggie sammies:", unfullfilled.hamSam, unfullfilled.turkeySam, unfullfilled.veggieSam));
-      # print(paste("Total cost for iter:", costs[n]));
-      # print(paste("Total revenue for iter", revenues[n]));
-      # print(paste("Total profit for iter", revenues[n] - costs[n]));
     }
 
-    # Generate data frame with all relevant data from single simulation 
-    simSalesData <- data.frame(costs=costs, revenues=revenues, profit=revenues-costs, 
-                            orders.ham=orders.hamSam, orders.turkey=order.turkeySam, orders.veggie=orders.veggieSam)
-
     # update aggregates over simulations
-    total.profits[simulation] = sum(simSalesData$profit); 
+    total.profits[simulation] = sum(revenues - costs); 
   }
 
   # Return vector of the total profits from the N simulations
   return(total.profits);
-
 }
 
-# Run three simulations
+# Run five simulations
 total.profits.sim1 <- runSimulation(14,14,8);
 total.profits.sim2 <- runSimulation(18,20,10);
 total.profits.sim3 <- runSimulation(18,20,10, TRUE);
+total.profits.sim4 <- runSimulation(lambda.ham, lambda.turkey, lambda.veggie);
+total.profits.sim5 <- runSimulation(lambda.ham, lambda.turkey, lambda.veggie, TRUE);
 
 # After all simulations done, show profit graphs
 p<-ggplot() + 
   geom_histogram(data=data.frame(profit=total.profits.sim1), aes(x=profit, fill="1"), alpha=0.4) + 
   geom_histogram(data=data.frame(profit=total.profits.sim2), aes(x=profit, fill="2"), alpha=0.4) + 
   geom_histogram(data=data.frame(profit=total.profits.sim3), aes(x=profit, fill="3"), alpha=0.4) + 
-  xlab('Profit') + 
+  geom_histogram(data=data.frame(profit=total.profits.sim4), aes(x=profit, fill="4"), alpha=0.4) + 
+  geom_histogram(data=data.frame(profit=total.profits.sim5), aes(x=profit, fill="5"), alpha=0.4) + 
+  xlab('Profit ($)') + 
   ylab('Frequency') + 
-  xlim(2500, 3700) +
-  ggtitle("Profit") + 
-  scale_fill_manual("", values=c("red", "green", "blue"), 
-                        breaks=c("1", "2", "3"), 
-                        labels=c("Constant Supply 14,14,8", "Constant Supply 18,20,10", "Constant Supply with Storage"));
+  xlim(2500, 3900) +
+  ggtitle("Profit Distribution Based on Various Models") + 
+  scale_fill_manual("", values=c("red", "green", "blue", "purple", "orange"), 
+                        breaks=c("1", "2", "3", "4", "5"), 
+                        labels=c("Constant Supply 14,14,8, No Storage", 
+                          "Constant Supply 18,20,10, No Storage", 
+                          "Constant Supply 18,20,10 with Storage", 
+                          "Variable Supply, No Storage",
+                          "Variable Supply, Storage"));
 p
 
 # Save profit graph to disk
