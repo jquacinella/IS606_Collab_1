@@ -77,7 +77,7 @@
 \normalsize
 
 
-\subsubsection{Initial Thoughts}\label{initial-thoughts}
+\subsubsection{Preliminary Analysis}\label{preliminary-analysis}
 
 After plotting histograms and scatterplots of the historical data, it
 was evident that:
@@ -85,20 +85,24 @@ was evident that:
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
-  Demand fluctuated heavily day to day
+  Demand can be modeled as a random variable.
 \item
-  James was often undersupplying all types of sandwiches (i.e.~demand
-  \textgreater{} supply)
+  Very often sandwich demand exceeded supply.
 \item
-  There were no imminent customer patterns based on day of sale (e.g
-  first day of each week had XX sales) or sandwich conditionality
-  (e.g.~if previous day sold X, next day would sell Y)
+  Daily sandwich demand was independent of previous demand.
+\item
+  Customer orders are independent of each other during the course of the
+  day.
 \item
   No obvious long-term demand trend upwards or downwards (linear
   regression, $a<.02$ and $r2<.0001$ for all types)
 \end{itemize}
 
-See Appendix:Initial Graphs
+\subsubsection{Initial Graphs}\label{initial-graphs}
+
+\includegraphics{./IS606_Sandwich_files/figure-latex/unnamed-chunk-11.pdf}
+\includegraphics{./IS606_Sandwich_files/figure-latex/unnamed-chunk-12.pdf}
+\includegraphics{./IS606_Sandwich_files/figure-latex/unnamed-chunk-13.pdf}
 
 \subsubsection{Objective}\label{objective}
 
@@ -110,18 +114,17 @@ supply.
 
 Sandwiches sold is a discrete variable and therefore can be estimated
 using a probability mass function. We forecasted demand using two
-different probability distributions, namely:
+different probability distributions. The first was to use the historical
+frequency: This distribution would match the probability ($X=x$) of the
+preceding period.
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\item
-  Historical frequency: This distribution would match the probability
-  ($X=x$) of the preceding period.
-\item
-  Poisson distribution: This is an applicable distribution because we
-  want the probability of a discrete number of occurences in a fixed
-  period of time (i.e.~sandwiches sold in a day)
-\end{enumerate}
+The second one is based on the frequency distribtutions suggest a
+probability distribution. Since, there is no constraint on the number of
+events and the outcomes are independent, we chose Poisson distribution
+as a candidate. In order to user Poisson distribution, we calculated
+lambda from historica data that gave us sandwich demand per day.
+
+\includegraphics{./IS606_Sandwich_files/figure-latex/unnamed-chunk-2.pdf}
 
 James previously supplied sandwiches at a mostly fixed amount. We used a
 fixed supply model for the historical distribution but modeled the
@@ -156,7 +159,8 @@ always met demand every day.
   helpers, more preparation space/tools)
 \item
   Supply goes to waste if not sold in a day. We vary this assumption in
-  our second Poisson distribution model\\
+  our second Poisson distribution model in that unsold sandwiches are
+  reused (and thus increase future supply).
 \end{itemize}
 
 \subsubsection{Profit Results}\label{profit-results}
@@ -212,8 +216,7 @@ total & $35,308$ & $21,450$ & $13,858$ \\
 \end{tabular} 
 \end{table}
 
-\textbf{(insert charts - frequency distribution, marginal profit
-curve?)}
+\textbf{(insert charts - frequency distribution)}
 
 \paragraph{C) Poisson Distribution - Fixed
 Supply}\label{c-poisson-distribution---fixed-supply}
@@ -223,25 +226,17 @@ Supply}\label{c-poisson-distribution---fixed-supply}
 \subparagraph{Without Storage (unsold sandwiches are
 wasted)}\label{without-storage-unsold-sandwiches-are-wasted}
 
-\begin{verbatim}
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-\end{verbatim}
-
-\begin{verbatim}
-## Warning: position_stack requires constant width: output may be incorrect
-## Warning: position_stack requires constant width: output may be incorrect
-## Warning: position_stack requires constant width: output may be incorrect
-\end{verbatim}
-
-\includegraphics{./IS606_Sandwich_files/figure-latex/unnamed-chunk-2.pdf}
+\includegraphics{./IS606_Sandwich_files/figure-latex/unnamed-chunk-4.pdf}
 
 \subparagraph{With Storage (unsold sandwiches are put back into
 supply)}\label{with-storage-unsold-sandwiches-are-put-back-into-supply}
 
+\includegraphics{./IS606_Sandwich_files/figure-latex/unnamed-chunk-5.pdf}
+
 \paragraph{D) Poisson Distribution - Variable
 Supply}\label{d-poisson-distribution---variable-supply}
+
+\includegraphics{./IS606_Sandwich_files/figure-latex/unnamed-chunk-6.pdf}
 
 \paragraph{E) Gold Standard - \$17,631}\label{e-gold-standard---17631}
 
@@ -249,10 +244,12 @@ This is the profit that would have been made if supply=demand each day
 so that no sandwich was wasted and every customer was satisfied.
 Comparing the previous methods as percent of gold standard achieved, we
 see the poisson variable supply model yielded XX\% while the poisson
-fixed model and historical probability model yielded XX\% and $78.6\%$,
+fixed model and historical probability model yielded YY\% and $78.6\%$,
 respectively.
 
 \subsubsection{Recommendations}\label{recommendations}
+
+TODO: be more exact
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -264,8 +261,14 @@ respectively.
 \item
   Consider investing in fridge, etc. to prolong product shelf life
 \item
-  Being able to carry over supply day-to-day greatly increase expected
+  Being able to carry over supply day-to-day greatly increases expected
   profit
+\item
+  If overestimating demand, we recommend veggie because the profit
+  margin is the same as turkey but the cost is the least.
+\item
+  If underestimate demand, we recommend turkey because the cost is the
+  highest but the profit is same as veggie.
 \end{itemize}
 
 \subsubsection{Limitations}\label{limitations}
@@ -284,13 +287,5 @@ respectively.
 \item
   In variable model, 3-day old sandwich is as `desirable' as fresh one
 \end{itemize}
-
-\section{Appendix}\label{appendix}
-
-\subsubsection{Initial Graphs}\label{initial-graphs}
-
-\includegraphics{./IS606_Sandwich_files/figure-latex/unnamed-chunk-41.pdf}
-\includegraphics{./IS606_Sandwich_files/figure-latex/unnamed-chunk-42.pdf}
-\includegraphics{./IS606_Sandwich_files/figure-latex/unnamed-chunk-43.pdf}
 
 \end{document}

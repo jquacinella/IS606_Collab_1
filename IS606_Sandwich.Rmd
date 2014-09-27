@@ -5,6 +5,7 @@ output:
   html_document:
     fig_width: 12
     keep_md: yes
+    keep_tex: yes
     theme: spacelab
     toc: yes
   pdf_document:
@@ -12,97 +13,14 @@ output:
     keep_tex: yes
 ---
 
-###Initial Thoughts
+```{r echo=FALSE}
+# 
+# Code to setup basic data frames and variables used throughout
+#
 
-After plotting histograms and scatterplots of the historical data, it was evident that:  
-
-* Demand fluctuated heavily day to day
-* James was often undersupplying all types of sandwiches (i.e. demand > supply)
-* There were no imminent customer patterns based on day of sale (e.g first day of each week had XX sales) or sandwich conditionality (e.g. if previous day sold X, next day would sell Y)
-* No obvious long-term demand trend upwards or downwards (linear regression, $a<.02$ and $r2<.0001$ for all types)
-
-See Appendix:Initial Graphs
-
-
-###Objective
-To maximize total sandwich profits over a 130-day period by estimating probability of demand and producing a fixed or variable quantity of supply.
-
-
-###General Strategy
-Sandwiches sold is a discrete variable and therefore can be estimated using a probability mass function. We forecasted demand using two different probability distributions, namely:
-
-1. Historical frequency: This distribution would match the probability ($X=x$) of the preceding period. 
-
-2. Poisson distribution: This is an applicable distribution because we want the probability of a discrete number of occurences in a fixed period of time (i.e. sandwiches sold in a day)
-
-<!--
-==For each case, a simulation approach was appropriate to increase the precision of the probability estimate **(not sure this is right wording**)
-
-==We ran simulations to best model these approaches in order to achieve a precise estimate of supply
--->
-
-James previously supplied sandwiches at a mostly fixed amount. We used a fixed supply model for the historical distribution but modeled the poisson distribution under both fixed and variable supply assumptions.
-
-A 130-day period was chosen to match the timeline of the given data. This allows for direct benchmarking (given below assumptions) against 1) profits that James actually made in the preceding 130 days, and 2) a gold standard profit margin that was achievable over 130 days if supply always met demand every day.
-
-###General Assumptions
-* Demand for each sandwich type is independent. What a customer orders is independent of what was ordered before.
-* Each customer only counts towards demand of one sandwich type. Therefore, if a customer wanted ham but it was sold out and turkey was bought instead, demand would count as 1 ham, 0 turkey. This means the sum of total demand equals the total number of customers who visited on a given day
-* Future demand will closely match historical demand. Again, there was no evident long-term trend and we have no information to assume a drastic drop or growth over the next 130 days (e.g. more people in the building, other competition, vegan explosion, swine flu epidemic)
-* There are no added fixed costs to increasing supply (e.g. hiring helpers, more preparation space/tools)
-* Supply goes to waste if not sold in a day. We vary this assumption in our second Poisson distribution model in that unsold sandwiches are reused (and thus increase future supply).  
-<!--More assumptions?-->
-
-###Profit Results
-####A) Previously achieved - $12,828  
-
-Given James' actual supply and demand over the 130-day period, he achieved the following:
-
-
-\begin{table}[!htbp]
-  \label{} 
-\begin{tabular}{@{\extracolsep{5pt}} ccccc} 
-\\[-1.8ex]\hline 
-\hline \\[-1.8ex] 
-type & revenue & cost & profit \\ 
-\hline \\[-1.8ex] 
-ham & $12,012$ & $7,175$ & $4,837$ \\ 
-turkey & $14,066$ & $8,960$ & $5,106$ \\ 
-veggie & $5,960$ & $3,075$ & $2,885$ \\ 
-total & $32,038$ & $19,210$ & $12,828$ \\ 
-\hline \\[-1.8ex] 
-\end{tabular} 
-\end{table} 
-
-
-####B) Historical Probability Distribution - $13,858  
-
-We used historical frequency of each demand amount to determine the probability ($X=x$) of each sandwich sold on a given day. With this probability distribution, we simulated 10,000 trials over a 130-day period to get our demand estimate. Under our assumption of fixed supply, we calculated the revenue, cost, and profit for each fixed number of sandwiches produced (over the demand range of each sandwich type).  
-
-The results demonstrate that the optimal fixed number of sandwiches to supply per day is equal to the expected value, which under a specific frequency distribution is the highest frequency value (ham: $n=15$ $p=0.123$, turkey: $n=20$ $p=0.1$, veggie: $n=13$ $p=.138$). 
-
-\begin{table}[!htbp]
-  \label{} 
-\begin{tabular}{@{\extracolsep{5pt}} ccccc} 
-\\[-1.8ex]\hline 
-\hline \\[-1.8ex] 
-type & revenue & cost & profit \\ 
-\hline \\[-1.8ex] 
-ham & $11,765$ & $6,825$ & $4,940$ \\ 
-turkey & $16,003$ & $10,400$ & $5,603$ \\ 
-veggie & $7,540$ & $4,225$ & $3,315$ \\ 
-total & $35,308$ & $21,450$ & $13,858$ \\ 
-\hline \\[-1.8ex] 
-\end{tabular} 
-\end{table} 
-
-
-**(insert charts - frequency distribution, marginal profit curve?)**
-
-
-####C) Poisson Distribution - Fixed Supply
-```{r, echo=FALSE}
 library(ggplot2)
+library(reshape2)
+
 # costs to make our sammies
 cost.hamSam <- 3.50;
 cost.turkeySam <- 4.00;
@@ -115,21 +33,139 @@ price.veggieSam <- 5;
 
 # number of days  in simulation
 days <- 130;
-numSimulations <- 10000;
+numSimulations <- 5000;
 
 # calculate poisson lambdas from data
-salesData <- read.csv("sales.csv")
-lambda.ham <- mean(salesData$demand.ham)
-lambda.turkey <- mean(salesData$demand.turkey)
-lambda.veggie <- mean(salesData$demand.veggie)
+salesData <- read.csv("sales.csv");
+lambda.ham <- mean(salesData$demand.ham);
+lambda.turkey <- mean(salesData$demand.turkey);
+lambda.veggie <- mean(salesData$demand.veggie);
+
+# calculate maximum demand for any sammie type
+max.ham <- max(salesData$demand.ham);
+max.turkey <- max(salesData$demand.turkey);
+max.veggie <- max(salesData$demand.veggie);
+
+# Read in data from homework asisgnment
+details <- read.csv("details.csv", header=T);
+sales <- read.csv("sales.csv", header=T);
+attach(sales)
+```
+
+### Preliminary Analysis
+
+After plotting histograms and scatterplots of the historical data, it was evident that:  
+
+* Demand can be modeled as a random variable.
+* Very often sandwich demand exceeded supply.
+* Daily sandwich demand was independent of previous demand.
+* Customer orders are independent of each other during the course of the day.
+* No obvious long-term demand trend upwards or downwards (linear regression, $a<.02$ and $r2<.0001$ for all types)
+
+### Initial Graphs
+
+```{r, echo=FALSE}
+demand <- melt(sales[1:4], id.vars="date", variable.name="type", value.name="demand")
+supply <- melt(sales[c(1,5,6,7)], id.vars="date", variable.name="type", value.name="supply")
+
+ham <- melt(sales[c(1,2,5)], id.vars="date", variable.name="metric", value.name="amount")
+turkey <- melt(sales[c(1,3,6)], id.vars="date", variable.name="metric", value.name="amount")
+veggie <- melt(sales[c(1,4,7)], id.vars="date", variable.name="metric", value.name="amount")
+
+plotHam <- ggplot(data=ham, aes(x=date, y=amount, group=metric, color=metric)) + geom_point() + geom_line() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_x_discrete(breaks=c("2014-03-03", "2014-04-01", "2014-05-01", "2014-06-02", "2014-07-01", "2014-08-01", "2014-08-29")) + ggtitle("Ham")
+
+plotTurkey <- ggplot(data=turkey, aes(x=date, y=amount, group=metric, color=metric)) + geom_point() + geom_line() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_x_discrete(breaks=c("2014-03-03", "2014-04-01", "2014-05-01", "2014-06-02", "2014-07-01", "2014-08-01", "2014-08-29")) + ggtitle("Turkey")
+
+plotVeggie <- ggplot(data=veggie, aes(x=date, y=amount, group=metric, color=metric)) + geom_point() + geom_line() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_x_discrete(breaks=c("2014-03-03", "2014-04-01", "2014-05-01", "2014-06-02", "2014-07-01", "2014-08-01", "2014-08-29")) + ggtitle("Veggie")
+
+plotHam
+
+plotTurkey
+
+plotVeggie
+```
 
 
+### Objective
+
+To maximize total sandwich profits over a 130-day period by estimating probability of demand and producing a fixed or variable quantity of supply.
+
+
+### General Strategy
+
+Sandwiches sold is a discrete variable and therefore can be estimated using a probability mass function. We forecasted demand using two different probability distributions. The first was to use the historical frequency: This distribution would match the probability ($X=x$) of the preceding period. 
+
+![plot1](./Historical_Frequency.png)
+
+The second one is based on the frequency distribtutions suggest a probability distribution. Since, there is no constraint on the number of events and the outcomes are independent, we chose Poisson distribution as a candidate. In order to use Poisson distribution, we calculated lambda from historica data that gave us sandwich demand per day.
+
+```{r, echo=FALSE}
+n = 130 # feel free to play with this number
+par(mfrow=c(1,3)) 
+lambda_ham = 15.94615
+plot(table(rpois(n, lambda_ham)), main="Poisson lambda=15.95", ylab="Frequency")
+
+lambda_turkey = 22.05385
+plot(table(rpois(n, lambda_turkey)), main="Poisson lambda=22.05", ylab="Frequency")
+
+lambda_veggie = 13.06154
+plot(table(rpois(n, lambda_veggie)), main="Poisson lambda=13.06", ylab="Frequency")
+```
+
+James previously supplied sandwiches at a mostly fixed amount. We used a fixed supply model for the historical distribution but modeled the poisson distribution under both fixed and variable supply assumptions.
+
+A 130-day period was chosen to match the timeline of the given data. This allows for direct benchmarking (given below assumptions) against 1) profits that James actually made in the preceding 130 days, and 2) a gold standard profit margin that was achievable over 130 days if supply always met demand every day.
+
+### General Assumptions
+
+* Demand for each sandwich type is independent. What a customer orders is independent of what was ordered before.
+* Each customer only counts towards demand of one sandwich type. Therefore, if a customer wanted ham but it was sold out and turkey was bought instead, demand would count as 1 ham, 0 turkey. This means the sum of total demand equals the total number of customers who visited on a given day
+* Future demand will closely match historical demand. Again, there was no evident long-term trend and we have no information to assume a drastic drop or growth over the next 130 days (e.g. more people in the building, other competition, vegan explosion, swine flu epidemic)
+* There are no added fixed costs to increasing supply (e.g. hiring helpers, more preparation space/tools)
+* Supply goes to waste if not sold in a day. We vary this assumption in our second Poisson distribution model in that unsold sandwiches are reused (and thus increase future supply).  
+
+### Profit Results
+
+#### A) Previously achieved - $12,828  
+
+Given James' actual supply and demand over the 130-day period, he achieved the following:
+
+```{r results = 'asis', echo=FALSE}
+library(knitr)
+data = data.frame(Type=c("Ham", "Turkey", "Veggie", "Total"), Revenue=c('$12,012', '$14,066', '$5,960', '$32,038'), Cost=c('$7,175', '$8,960', '$3,075', '$19,210'), Profit=c('$4,837', '$5,106', '$2,885', '$12,828'))
+kable(data)
+```
+
+#### B) Historical Probability Distribution - $13,858  
+
+We used historical frequency of each demand amount to determine the probability ($X=x$) of each sandwich sold on a given day. With this probability distribution, we simulated 10,000 trials over a 130-day period to get our demand estimate. Under our assumption of fixed supply, we calculated the revenue, cost, and profit for each fixed number of sandwiches produced (over the demand range of each sandwich type).  
+
+The results demonstrate that the optimal fixed number of sandwiches to supply per day is equal to the expected value, which under a specific frequency distribution is the highest frequency value (ham: $n=15$ $p=0.123$, turkey: $n=20$ $p=0.1$, veggie: $n=13$ $p=.138$). 
+
+```{r results = 'asis', echo=FALSE}
+library(knitr)
+data = data.frame(Type=c("ham", "turkey", "veggie", "total"), Revenue=c('$11,765', '$16,003', '$7,540', '$35,308'), Cost=c('$6,825', '$10,400', '$4,225', '$21,450'), Profit=c('$4,940', '$5,603', '$3,315', '$13,858'))
+kable(data, format="markdown")
+```
+
+
+```{r, echo=FALSE}
 runSimulation <- function(stock.begin.hamSam, stock.begin.turkeySam, stock.begin.veggieSam, withStorage=FALSE) {
   # lets initialize our stock to nothing (will be setup at beginning of each iter)
   stock.hamSam <- 0;
   stock.turkeySam <- 0;
   stock.veggieSam <- 0;
 
+  stock.begin.hamSam <- as.integer(stock.begin.hamSam);
+  stock.begin.turkeySam <- as.integer(stock.begin.turkeySam);
+  stock.begin.veggieSam <- as.integer(stock.begin.veggieSam);
+  
   # profit results for overall simulation
   total.profits <- numeric(numSimulations); 
 
@@ -234,124 +270,98 @@ runSimulation <- function(stock.begin.hamSam, stock.begin.turkeySam, stock.begin
   return(total.profits);
 }
 ```
-**include that lambda = expected value = optimum supply level**
 
-#####Without Storage (unsold sandwiches are wasted)
+#### C) Poisson Distribution - Fixed Supply Without Storage (unsold sandwiches are wasted)
+
+We assume that James will bring in a fixed amount every day and has no way to store excess sandwiches. We choose 3 different models:
+
+  * Using the lowest numbers from the data: 14 ham, 14 turkey, and 8 veggie sandwiches
+  * Using the higher numbers from the data: 18 ham, 20 turkey, and 10 veggie sandwiches
+  * Using the mean demand for each sandwich from the data: 16 ham, 22 turkey, and 13 veggie sandwiches
+  
+Note: we do not show maximum demand model on this graph, since with no storage, this reduces profits by a wide margin.
+
 ```{r, echo=FALSE, fig.width=12}
 total.profits.sim1 <- runSimulation(14,14,8);
 total.profits.sim2 <- runSimulation(18,20,10);
-total.profits.sim4 <- runSimulation(lambda.ham, lambda.turkey, lambda.veggie);
+total.profits.sim3 <- runSimulation(lambda.ham, lambda.turkey, lambda.veggie);
+#total.profits.sim4 <- runSimulation(max.ham, max.turkey, max.veggie);
 
 # After all simulations done, show profit graphs
 p<-ggplot() + 
   geom_histogram(data=data.frame(profit=total.profits.sim1), aes(x=profit, fill="1"), alpha=0.4, binwidth=1) + 
   geom_histogram(data=data.frame(profit=total.profits.sim2), aes(x=profit, fill="2"), alpha=0.4, binwidth=1) + 
-  xlab('Profit ($)') + 
+  geom_histogram(data=data.frame(profit=total.profits.sim3), aes(x=profit, fill="3"), alpha=0.4, binwidth=1) + 
+  xlab('Profit ($)') + xlim(11000, 19000) +
   ylab('Frequency') + 
   ggtitle("Profit Distribution Based on Fixed Supply Models w/o Storage") + 
-  scale_fill_manual("", values=c("red", "green"), 
-                        breaks=c("1", "2"), 
+  scale_fill_manual("", values=c("red", "blue", "orange", "green"), 
+                        breaks=c("1", "2", "3", "4"), 
                         labels=c("Constant Supply 14,14,8, No Storage", 
-                          "Constant Supply 18,20,10, No Storage"));
-p
+                          "Constant Supply 18,20,10, No Storage", 
+                          "Constant Supply at Demand Average, No Storage",
+                          "Constant Supply at Maximum Demand, No Storage"));
+p;
+
+mean.profits.sim1 <- mean(total.profits.sim1);
+mean.profits.sim2 <- mean(total.profits.sim2);
+mean.profits.sim3 <- mean(total.profits.sim3);
 ```
 
-#####With Storage (unsold sandwiches are put back into supply)
+#### D) Fixed Supply With Storage (unsold sandwiches are put back into supply)
+
+We assume that James will bring in a fixed amount every day but this time does have a wat store excess sandwiches. We choose 4 different models:
+
+  * Using the lowest numbers from the data: 14 ham, 14 turkey, and 8 veggie sandwiches
+  * Using the higher numbers from the data: 18 ham, 20 turkey, and 10 veggie sandwiches
+  * Using the mean demand for each sandwich from the data: 16 ham, 22 turkey, and 13 veggie sandwiches
+  * Using the maximum demand model for each sandwich from the data: 25 ham, 37 turkey, and 24 veggie sandwiches
+
 ```{r, echo=FALSE, fig.width=12}
-total.profits.sim1 <- runSimulation(14,14,8, TRUE);
-total.profits.sim3 <- runSimulation(18,20,10, TRUE);
-total.profits.sim6 <- runSimulation(25,37,24, TRUE);
+total.profits.sim5 <- runSimulation(14,14,8, TRUE);
+total.profits.sim6 <- runSimulation(18,20,10, TRUE);
+total.profits.sim7 <- runSimulation(lambda.ham, lambda.turkey, lambda.veggie, TRUE);
+total.profits.sim8 <- runSimulation(max.ham, max.turkey, max.veggie, TRUE);
 
 # After all simulations done, show profit graphs
 p2<-ggplot() + 
-  geom_histogram(data=data.frame(profit=total.profits.sim1), aes(x=profit, fill="1"), alpha=0.4, binwidth=1) +  
-  geom_histogram(data=data.frame(profit=total.profits.sim3), aes(x=profit, fill="2"), alpha=0.4, binwidth=1) + 
-  geom_histogram(data=data.frame(profit=total.profits.sim6), aes(x=profit, fill="3"), alpha=0.4, binwidth=1) + 
-  xlab('Profit ($)') + 
+  geom_histogram(data=data.frame(profit=total.profits.sim5), aes(x=profit, fill="1"), alpha=0.4, binwidth=1) +  
+  geom_histogram(data=data.frame(profit=total.profits.sim6), aes(x=profit, fill="2"), alpha=0.4, binwidth=1) + 
+  geom_histogram(data=data.frame(profit=total.profits.sim7), aes(x=profit, fill="3"), alpha=0.4, binwidth=1) + 
+  geom_histogram(data=data.frame(profit=total.profits.sim8), aes(x=profit, fill="4"), alpha=0.4, binwidth=1) + 
+  xlab('Profit ($)') + xlim(11000, 19000) +
   ylab('Frequency') + 
   ggtitle("Profit Distribution Based on Fixed Supply Models with Storage") + 
-  scale_fill_manual("", values=c("red", "blue", "orange"), 
-                        breaks=c("1", "2", "3"), 
-                        labels=c("Constant Supply 14,14,8 with Storage","Constant Supply 18,20,10 with Storage",
-                          "Max Demand Supply w/ Storage"));
-p2
+  scale_fill_manual("", values=c("red", "blue", "orange", "green"), 
+                        breaks=c("1", "2", "3", "4"), 
+                        labels=c("Constant Supply (14,14,8) with Storage",
+                                 "Constant Supply (18,20,10) with Storage",
+                                 "Constant Supply at Demand Average with Storage",
+                                 "Max Demand Supply (25,37,24) w/ Storage"));
+p2;
+mean.profits.sim5 <- mean(total.profits.sim5);
+mean.profits.sim6 <- mean(total.profits.sim6);
+mean.profits.sim7 <- mean(total.profits.sim7);
+mean.profits.sim8 <- mean(total.profits.sim8);
 ```
 
+#### E) Gold Standard - $17,631  
 
+This is the profit that would have been made if supply = demand each day (variable supply model) so that no sandwich was wasted and every customer was satisfied. Comparing the previous methods as percent of gold standard achieved, we see the "fixed supply at avergae demand, no storage model" yielded **`r (mean.profits.sim3 * 100 / 17631)`%** while the "fixed supply at avergae demand, storage model" yielded **`r (mean.profits.sim7 * 100 / 17631)`%**.
 
-####D) Poisson Distribution - Variable Supply
+### Recommendations
 
-```{r, echo=FALSE, fig.width=12}
-total.profits.sim4 <- runSimulation(lambda.ham, lambda.turkey, lambda.veggie);
-total.profits.sim5 <- runSimulation(lambda.ham, lambda.turkey, lambda.veggie, TRUE);
-p3<-ggplot() + 
-  geom_histogram(data=data.frame(profit=total.profits.sim4), aes(x=profit, fill="4"), alpha=0.4, binwidth=1) + 
-  geom_histogram(data=data.frame(profit=total.profits.sim5), aes(x=profit, fill="5"), alpha=0.4, binwidth=1) +
-  xlab('Profit ($)') + 
-  ylab('Frequency') + 
-  ggtitle("Profit Distribution Based on Variable Supply Models with and without Storage") + 
-  scale_fill_manual("", values=c("purple", "pink"), 
-                        breaks=c("4", "5"), 
-                        labels=c("Variable Supply, No Storage",
-                          "Variable Supply, Storage"));
-p3
-```
-
-
-
-
-####E) Gold Standard - $17,631  
-
-This is the profit that would have been made if supply=demand each day so that no sandwich was wasted and every customer was satisfied. Comparing the previous methods as percent of gold standard achieved, we see the poisson variable supply model yielded XX% while the poisson fixed model and historical probability model yielded XX% and $78.6\%$, respectively.
-
-
-###Recommendations
-
-* If fixed supply, produce at rate of expected value 
+* If using a fixed supply with no storage, then it should be set to expected value of each demand variable (i.e., supply of ham, turkey and veggie sandwiches should be 16, 22, 13, respectively). This will show an immediate increase in profits.
 * Poisson distribution fit historical data very well - can use as distribution function going forward
-* Consider investing in fridge, etc. to prolong product shelf life
+* Consider investing in fridge, etc. to prolong product shelf life. Without storage, when you over-shoot on supply (i.e. customer demand is to the left of the mean), you lose money in waste. Having storage allows you to overshoot without having to bear that extra cost.
 * Being able to carry over supply day-to-day greatly increases expected profit
+* If overestimating demand, we recommend veggie because the profit margin is the same as turkey but the cost is the least.
+* If underestimate demand, we recommend turkey because the cost is the highest but the profit is same as veggie.
 
-###Limitations
+### Limitations
 
 * Simple model assuming external factors not changing
 * Will historical demand ~ Future demand?
 * Covariance. If no turkey is produced, could some/all switch to higher margin ham?
 * Fixed supply costs in real world would likely increase
 * In variable model, 3-day old sandwich is as 'desirable' as fresh one
-
-
-#Appendix
-###Initial Graphs
-```{r, echo=FALSE}
-library(ggplot2)
-library(reshape2)
-details <- read.csv("details.csv", header=T)
-sales <- read.csv("sales.csv", header=T)
-attach(sales)
-demand <- melt(sales[1:4], id.vars="date", variable.name="type", value.name="demand")
-supply <- melt(sales[c(1,5,6,7)], id.vars="date", variable.name="type", value.name="supply")
-ham <- melt(sales[c(1,2,5)], id.vars="date", variable.name="metric", value.name="amount")
-turkey <- melt(sales[c(1,3,6)], id.vars="date", variable.name="metric", value.name="amount")
-veggie <- melt(sales[c(1,4,7)], id.vars="date", variable.name="metric", value.name="amount")
-plotHam <- ggplot(data=ham, aes(x=date, y=amount, group=metric, color=metric)) + geom_point() + geom_line() +
-theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-scale_x_discrete(breaks=c("2014-03-03", "2014-04-01", "2014-05-01", "2014-06-02", "2014-07-01", "2014-08-01", "2014-08-29")) +
-ggtitle("Ham")
-plotTurkey <- ggplot(data=turkey, aes(x=date, y=amount, group=metric, color=metric)) + geom_point() + geom_line() +
-theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-scale_x_discrete(breaks=c("2014-03-03", "2014-04-01", "2014-05-01", "2014-06-02", "2014-07-01", "2014-08-01", "2014-08-29")) +
-ggtitle("Turkey")
-plotVeggie <- ggplot(data=veggie, aes(x=date, y=amount, group=metric, color=metric)) + geom_point() + geom_line() +
-theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-scale_x_discrete(breaks=c("2014-03-03", "2014-04-01", "2014-05-01", "2014-06-02", "2014-07-01", "2014-08-01", "2014-08-29")) +
-ggtitle("Veggie")
-```
-
-```{r, echo=FALSE}
-plotHam
-
-plotTurkey
-
-plotVeggie
-```
